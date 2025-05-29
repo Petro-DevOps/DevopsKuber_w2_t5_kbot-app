@@ -1,4 +1,4 @@
-module github.com/Petro-DevOps/DevopsKuber_w2_t5_kbot-app
+module github.com/Petro-DevOps/kbot-app
 
 go 1.24.2
 
