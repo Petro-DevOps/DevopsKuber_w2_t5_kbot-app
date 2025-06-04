@@ -16,8 +16,8 @@ export GOOS
 export GOARCH
 
 
-format:
-	gofmt ./
+#format:
+#	@command -v gofmt >/dev/null && gofmt -s -w ./ || echo "Skipping gofmt: not installed"
 
 lint:
 	golint
@@ -25,11 +25,11 @@ lint:
 test:
 	go test -v
 
-get:
-	go get
+#get:
+#	go get
 
 # can be used for manual build 
-build: format get
+build: 
 	@echo "Building for: GOOS=$(GOOS), GOARCH=$(GOARCH)"
 	gofmt -s -w . && go get ./... && CGO_ENABLED=0 GOOS=$(GOOS) GOARCH=$(GOARCH) go build -v -x -o $(BUILD_DIR)/kbot-app-$(GOOS)-$(GOARCH) -ldflags "-X="github.com/Petro-DevOps/kbot-app/cmd.appVersion=${VERSION}
 

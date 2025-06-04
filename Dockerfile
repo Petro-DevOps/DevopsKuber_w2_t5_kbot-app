@@ -1,6 +1,8 @@
 # ===== Stage 1: Build stage =====
 FROM --platform=$BUILDPLATFORM golang:latest AS builder
 
+WORKDIR /go/src/app
+
 RUN apt-get update && apt-get install -y --no-install-recommends \
     bash \
     git \
@@ -10,20 +12,18 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 
+# Define build args
 ARG TARGETOS
 ARG TARGETARCH
-ARG VERSION
+ARG VERSION=dev
 
-
-ENV GOPATH=/go
-ENV PATH=$PATH:/usr/local/go/bin:$GOPATH/bin
-
-WORKDIR /go/src/app
-
+# Copy source code
 COPY . .
-##RUN apk --no-cache add ca-certificates
-### RUN go mod tidy && go mod download
 
+# Format code (gofmt is included in Go image)
+RUN gofmt -s -w .
+
+# Build the app
 RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -v -o kbot-app -ldflags "-X=github.com/Petro-DevOps/kbot-app/cmd.appVersion=${VERSION}"
 
 
