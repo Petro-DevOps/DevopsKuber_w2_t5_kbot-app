@@ -1,6 +1,15 @@
 # ===== Stage 1: Build stage =====
 FROM --platform=$BUILDPLATFORM golang:latest AS builder
 
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    bash \
+    git \
+    curl \
+    ca-certificates \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+
 ARG TARGETOS
 ARG TARGETARCH
 ARG VERSION
@@ -14,8 +23,6 @@ WORKDIR /go/src/app
 COPY . .
 ##RUN apk --no-cache add ca-certificates
 ### RUN go mod tidy && go mod download
-RUN gofmt -s -w ./ && \
-    go get ./...
 
 RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -v -o kbot-app -ldflags "-X=github.com/Petro-DevOps/kbot-app/cmd.appVersion=${VERSION}"
 

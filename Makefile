@@ -17,7 +17,7 @@ export GOARCH
 
 
 format:
-	gofmt -s -w ./
+	gofmt ./
 
 lint:
 	golint
@@ -31,7 +31,7 @@ get:
 # can be used for manual build 
 build: format get
 	@echo "Building for: GOOS=$(GOOS), GOARCH=$(GOARCH)"
-	CGO_ENABLED=0 GOOS=$(GOOS) GOARCH=$(GOARCH) go build -v -x -o $(BUILD_DIR)/kbot-app-$(GOOS)-$(GOARCH) -ldflags "-X="github.com/Petro-DevOps/kbot-app/cmd.appVersion=${VERSION}
+	gofmt -s -w . && go get ./... && CGO_ENABLED=0 GOOS=$(GOOS) GOARCH=$(GOARCH) go build -v -x -o $(BUILD_DIR)/kbot-app-$(GOOS)-$(GOARCH) -ldflags "-X="github.com/Petro-DevOps/kbot-app/cmd.appVersion=${VERSION}
 
 #build-platform: format get 
 #	@echo "Building for: GOOS=$(GOOS), GOARCH=$(GOARCH)"
@@ -43,9 +43,15 @@ build: format get
 #platform-specific targets
 linux: 
 	$(MAKE) build-platform GOOS=linux GOARCH=amd64
+	@echo 'GOOS=linux' > .platform_env
+	@echo 'GOARCH=amd64' >> .platform_env
+	@echo "Exported variables values into platform_env file target are: GOOS=$(GOOS), GOARCH=$(GOARCH)"
 
 linux_arm64: 
 	$(MAKE) build-platform GOOS=linux GOARCH=arm64
+	@echo 'GOOS=linux' > .platform_env
+	@echo 'GOARCH=arm64' >> .platform_env
+	@echo "Exported variables values into platform_env file target are: GOOS=$(GOOS), GOARCH=$(GOARCH)"
 
 darwin: 
 	$(MAKE) build-platform GOOS=darwin GOARCH=amd64
@@ -56,9 +62,15 @@ darwin:
 
 darwin_arm64:
 	$(MAKE) build-platform GOOS=darwin GOARCH=arm64
+	@echo 'GOOS=darwin' > .platform_env
+	@echo 'GOARCH=arm64' >> .platform_env
+	@echo "Exported variables values into platform_env file target are: GOOS=$(GOOS), GOARCH=$(GOARCH)"
 
 windows:
 	$(MAKE) build-platform GOOS=windows GOARCH=amd64
+	@echo 'GOOS=windows' > .platform_env
+	@echo 'GOARCH=amd64' >> .platform_env
+	@echo "Exported variables values into platform_env file target are: GOOS=$(GOOS), GOARCH=$(GOARCH)"
 
 # Збірка для всіх основних платформ
 build-all:
