@@ -1,9 +1,6 @@
 APP=$(shell basename -s .git $(shell git remote get-url origin))
 REGISTRY=ghcr.io/petro-devops/kbot-app
-VERSION_RAW := $(shell git describe --always --dirty=-wip 2>/dev/null)
-VERSION_SAN := $(shell printf "%s" "$(VERSION_RAW)" | sed 's#[/:]#-#g')
-VERSION := $(if $(VERSION_SAN),$(VERSION_SAN),dev-test-001)
-#VERSION=$(shell git describe --tags --abbrev=0)-$(shell git rev-parse --short HEAD)
+VERSION=$(shell git describe --tags --abbrev=0)-$(shell git rev-parse --short HEAD)
 BUILD_DIR = builds
 
 
@@ -18,6 +15,18 @@ GOARCH ?=
 export GOOS
 export GOARCH
 
+UNAME_S := $(shell uname -s)
+UNAME_M := $(shell uname -m)
+
+GOOS ?= $(shell echo $(UNAME_S) | tr '[:upper:]' '[:lower:]')
+GOARCH ?= $(UNAME_M)
+
+ifeq ($(GOARCH),x86_64)
+  GOARCH := amd64
+endif
+ifeq ($(GOARCH),aarch64)
+  GOARCH := arm64
+endif
 
 #format:
 #	@command -v gofmt >/dev/null && gofmt -s -w ./ || echo "Skipping gofmt: not installed"

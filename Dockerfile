@@ -1,13 +1,15 @@
 # ===== Stage 1: Build stage =====
-FROM --platform=$BUILDPLATFORM golang:latest AS builder
+#FROM --platform=$BUILDPLATFORM golang:latest AS builder
+FROM golang:latest AS builder
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    bash \
-    git \
-    curl \
-    ca-certificates \
-    build-essential \
-    && rm -rf /var/lib/apt/lists/*
+
+#RUN apt-get update && apt-get install -y --no-install-recommends \
+#    bash \
+#    git \
+#    curl \
+#    ca-certificates \
+#    build-essential \
+#    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /go/src/app
 
