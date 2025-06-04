@@ -106,7 +106,7 @@ platform=$(GOOS)/$(GOARCH)
 endif
 
 
-image: build
+image:
 	@echo "Building Docker image for: GOOS=$(GOOS), GOARCH=$(GOARCH), version=$(VERSION)"
 	docker build \
 		--platform=$(GOOS)/$(GOARCH) \
