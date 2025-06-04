@@ -1,6 +1,9 @@
 APP=$(shell basename -s .git $(shell git remote get-url origin))
 REGISTRY=ghcr.io/petro-devops/kbot-app
-VERSION=$(shell git describe --tags --abbrev=0)-$(shell git rev-parse --short HEAD)
+VERSION_RAW := $(shell git describe --always --dirty=-wip 2>/dev/null)
+VERSION_SAN := $(shell echo $(VERSION_RAW) | sed 's#[/:]#-#g')
+VERSION := $(if $(VERSION_SAN),$(VERSION_SAN),dev-test-001)
+#VERSION=$(shell git describe --tags --abbrev=0)-$(shell git rev-parse --short HEAD)
 BUILD_DIR = builds
 
 
