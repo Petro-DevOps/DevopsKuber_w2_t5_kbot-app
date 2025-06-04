@@ -33,12 +33,12 @@ build: format get
 	@echo "Building for: GOOS=$(GOOS), GOARCH=$(GOARCH)"
 	CGO_ENABLED=0 GOOS=$(GOOS) GOARCH=$(GOARCH) go build -v -x -o $(BUILD_DIR)/kbot-app-$(GOOS)-$(GOARCH) -ldflags "-X="github.com/Petro-DevOps/kbot-app/cmd.appVersion=${VERSION}
 
-build-platform: format get 
-	@echo "Building for: GOOS=$(GOOS), GOARCH=$(GOARCH)"
-	export GOOS=$(GOOS)
-	export GOARCH=$(GOARCH)
-	@echo "Exported variables values are: GOOS=$(GOOS), GOARCH=$(GOARCH)"
-	CGO_ENABLED=0 GOOS=$(GOOS) GOARCH=$(GOARCH) go build -v -o $(BUILD_DIR)/$(APP)-$(GOOS)-$(GOARCH) -ldflags "-X=github.com/Petro-DevOps/kbot-app/cmd.appVersion=${VERSION}"
+#build-platform: format get 
+#	@echo "Building for: GOOS=$(GOOS), GOARCH=$(GOARCH)"
+#	export GOOS=$(GOOS)
+#	export GOARCH=$(GOARCH)
+#	@echo "Exported variables values are: GOOS=$(GOOS), GOARCH=$(GOARCH)"
+#	CGO_ENABLED=0 GOOS=$(GOOS) GOARCH=$(GOARCH) go build -v -o $(BUILD_DIR)/$(APP)-$(GOOS)-$(GOARCH) -ldflags "-X=github.com/Petro-DevOps/kbot-app/cmd.appVersion=${VERSION}"
 
 #platform-specific targets
 linux: 
@@ -94,7 +94,7 @@ platform=$(GOOS)/$(GOARCH)
 endif
 
 
-image: build-platform
+image: build
 	@echo "Building Docker image for: GOOS=$(GOOS), GOARCH=$(GOARCH), version=$(VERSION)"
 	docker build \
 		--platform=$(GOOS)/$(GOARCH) \
