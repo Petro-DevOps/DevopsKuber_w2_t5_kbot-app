@@ -3,7 +3,7 @@ FROM --platform=$BUILDPLATFORM golang:latest AS builder
 
 # Build-time arguments
 ARG TARGETPLATFORM
-ARG VERSION=dev
+ARG VERSION=dev-test-001
 
 # Print platform
 RUN echo "Building for platform: $TARGETPLATFORM"

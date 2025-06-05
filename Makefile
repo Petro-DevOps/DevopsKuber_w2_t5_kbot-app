@@ -1,8 +1,7 @@
 APP=$(shell basename -s .git $(shell git remote get-url origin))
 REGISTRY=ghcr.io/petro-devops/kbot-app
-#VERSION=$(shell git describe --tags --abbrev=0)-$(shell git rev-parse --short HEAD)
+VERSION=$(shell git describe --tags --abbrev=0)-$(shell git rev-parse --short HEAD)
 BUILD_DIR = builds
-
 
 # Variables for manual build
 #GOOS ?= 
@@ -41,7 +40,7 @@ export GOOS
 export GOARCH
 
 # Git version fallback
-VERSION=$(shell git describe --tags --abbrev=0)
+#VERSION=$(shell git describe --tags --abbrev=0)
 
 export VERSION
 
