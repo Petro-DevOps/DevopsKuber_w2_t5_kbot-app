@@ -11,15 +11,36 @@ BUILD_DIR = builds
 # Load platform values if they exist
 #-include .platform_env
 
-# Export to make available to subshells
+# Fallback-safe way to get host OS and Arch
+UNAME_S := $(shell uname -s 2>/dev/null || echo Unknown)
+UNAME_M := $(shell uname -m 2>/dev/null || echo unknown)
 
-# Default platform (can be overridden)
-PLATFORM ?= linux/amd64
+# Normalize OS
+ifeq ($(UNAME_S),Linux)
+  GOOS := linux
+else ifeq ($(findstring MINGW,$(UNAME_S)),MINGW)
+  GOOS := windows
+else ifeq ($(findstring MSYS,$(UNAME_S)),MSYS)
+  GOOS := windows
+else ifeq ($(UNAME_S),Darwin)
+  GOOS := darwin
+else
+  GOOS := unknown
+endif
+
+# Normalize Arch
+ifeq ($(UNAME_M),x86_64)
+  GOARCH := amd64
+else ifeq ($(UNAME_M),aarch64)
+  GOARCH := arm64
+else
+  GOARCH := unknown
+endif
+
+export GOOS
+export GOARCH
 
 # Git version fallback
-VERSION_RAW := $(shell git describe --always --dirty=-wip 2>/dev/null)
-VERSION_SAN := $(shell printf "%s" "$(VERSION_RAW)" | sed 's#[/: ]#-#g')
-VERSION := $(if $(VERSION_SAN),$(VERSION_SAN),dev-test-001)
 VERSION=$(shell git describe --tags --abbrev=0)
 
 export VERSION
@@ -128,9 +149,11 @@ endif
 		-t $(REGISTRY):$(VERSION)-$(GOOS)-$(GOARCH) .
 
 image:
-	@echo "Building Docker image for: $(PLATFORM), version=$(VERSION)"
+	@echo "Building Docker image for: GOOS=$(GOOS), GOARCH=$(GOARCH), VERSION=$(VERSION)"
 	docker build \
-		--platform=$(PLATFORM) \
+		--platform=$(GOOS)/$(GOARCH) \
+		--build-arg TARGETOS=$(GOOS) \
+		--build-arg TARGETARCH=$(GOARCH) \
 		--build-arg VERSION=$(VERSION) \
 		-t $(REGISTRY):$(VERSION)-$(subst /,-,$(PLATFORM)) \
 		.

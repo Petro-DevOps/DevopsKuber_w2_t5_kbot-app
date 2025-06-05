@@ -20,7 +20,7 @@ WORKDIR /go/src/app
 COPY . .
 
 # Run gofmt, get modules, and build
-RUN gofmt -s -w . && \
+RUN gofmt -s -w ./ && \
     go mod tidy && \
     go get && \
     CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -v -o kbot-app -ldflags "-X=github.com/Petro-DevOps/kbot-app/cmd.appVersion=${VERSION}"
