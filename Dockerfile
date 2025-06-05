@@ -1,22 +1,20 @@
 # ===== Stage 1: Build stage =====
-#FROM --platform=$BUILDPLATFORM golang:latest AS builder
-FROM golang:latest AS builder
+FROM --platform=$BUILDPLATFORM golang:latest AS builder
 
+# Build-time arguments
+ARG TARGETPLATFORM
+ARG VERSION=dev
 
-#RUN apt-get update && apt-get install -y --no-install-recommends \
-#    bash \
-#    git \
-#    curl \
-#    ca-certificates \
-#    build-essential \
-#    && rm -rf /var/lib/apt/lists/*
+# Print platform
+RUN echo "Building for platform: $TARGETPLATFORM"
+RUN echo "App version: $VERSION"
+
+# Install dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    git build-essential curl ca-certificates && \
+    rm -rf /var/lib/apt/lists/*
 
 WORKDIR /go/src/app
-
-# Define build args
-ARG TARGETOS
-ARG TARGETARCH
-ARG VERSION=dev
 
 # Copy source code
 COPY . .
@@ -24,7 +22,7 @@ COPY . .
 # Run gofmt, get modules, and build
 RUN gofmt -s -w . && \
     go mod tidy && \
-    go get ./... && \ 
+    go get && \
     CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -v -o kbot-app -ldflags "-X=github.com/Petro-DevOps/kbot-app/cmd.appVersion=${VERSION}"
 
 
@@ -34,7 +32,7 @@ WORKDIR /app
 
 COPY --from=builder /go/src/app/kbot-app /app/kbot-app
 COPY --from=alpine:latest /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
-LABEL org.opencontainers.image.source="https://github.com/petro-devops/kbot-app"
+#LABEL org.opencontainers.image.source="https://github.com/petro-devops/kbot-app"
 
 ENTRYPOINT ["/app/kbot-app"]
 
@@ -46,6 +44,6 @@ WORKDIR /app
 
 COPY --from=builder /go/src/app/kbot-app /app/kbot-app
 
-LABEL org.opencontainers.image.source="https://github.com/petro-devops/kbot-app"
+#LABEL org.opencontainers.image.source="https://github.com/petro-devops/kbot-app"
 
 ENTRYPOINT ["/app/kbot-app"]

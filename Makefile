@@ -1,32 +1,31 @@
 APP=$(shell basename -s .git $(shell git remote get-url origin))
 REGISTRY=ghcr.io/petro-devops/kbot-app
-VERSION=$(shell git describe --tags --abbrev=0)-$(shell git rev-parse --short HEAD)
+#VERSION=$(shell git describe --tags --abbrev=0)-$(shell git rev-parse --short HEAD)
 BUILD_DIR = builds
 
 
 # Variables for manual build
-GOOS ?= 
-GOARCH ?= 
+#GOOS ?= 
+#GOARCH ?= 
 
 # Load platform values if they exist
--include .platform_env
+#-include .platform_env
 
 # Export to make available to subshells
-export GOOS
-export GOARCH
 
-UNAME_S := $(shell uname -s)
-UNAME_M := $(shell uname -m)
+# Default platform (can be overridden)
+PLATFORM ?= linux/amd64
 
-GOOS ?= $(shell echo $(UNAME_S) | tr '[:upper:]' '[:lower:]')
-GOARCH ?= $(UNAME_M)
+# Git version fallback
+VERSION_RAW := $(shell git describe --always --dirty=-wip 2>/dev/null)
+VERSION_SAN := $(shell printf "%s" "$(VERSION_RAW)" | sed 's#[/: ]#-#g')
+VERSION := $(if $(VERSION_SAN),$(VERSION_SAN),dev-test-001)
+VERSION=$(shell git describe --tags --abbrev=0)
 
-ifeq ($(GOARCH),x86_64)
-  GOARCH := amd64
-endif
-ifeq ($(GOARCH),aarch64)
-  GOARCH := arm64
-endif
+export VERSION
+
+.PHONY: image
+
 
 #format:
 #	@command -v gofmt >/dev/null && gofmt -s -w ./ || echo "Skipping gofmt: not installed"
@@ -43,7 +42,7 @@ test:
 # can be used for manual build 
 build: 
 	@echo "Building for: GOOS=$(GOOS), GOARCH=$(GOARCH)"
-	gofmt -s -w . && go get ./... && CGO_ENABLED=0 GOOS=$(GOOS) GOARCH=$(GOARCH) go build -v -x -o $(BUILD_DIR)/kbot-app-$(GOOS)-$(GOARCH) -ldflags "-X="github.com/Petro-DevOps/kbot-app/cmd.appVersion=${VERSION}
+	gofmt -s -w ./ && go get && CGO_ENABLED=0 GOOS=$(GOOS) GOARCH=$(GOARCH) go build -v -x -o $(BUILD_DIR)/kbot-app-$(GOOS)-$(GOARCH) -ldflags "-X="github.com/Petro-DevOps/kbot-app/cmd.appVersion=${VERSION}
 
 #build-platform: format get 
 #	@echo "Building for: GOOS=$(GOOS), GOARCH=$(GOARCH)"
@@ -118,15 +117,23 @@ platform=$(GOOS)/$(GOARCH)
 endif
 
 
-image:
-	@echo "Building Docker image for: GOOS=$(GOOS), GOARCH=$(GOARCH), version=$(VERSION)"
-	docker build \
+#image:
+#	@echo "Building Docker image for: GOOS=$(GOOS), GOARCH=$(GOARCH), version=$(VERSION)"
+#	docker build \
 		--platform=$(GOOS)/$(GOARCH) \
 		--build-arg TARGETOS=$(GOOS) \
 		--build-arg TARGETARCH=$(GOARCH) \
 		--build-arg VERSION=$(VERSION) \
 		--target=$(DOCKER_TARGET) \
 		-t $(REGISTRY):$(VERSION)-$(GOOS)-$(GOARCH) .
+
+image:
+	@echo "Building Docker image for: $(PLATFORM), version=$(VERSION)"
+	docker build \
+		--platform=$(PLATFORM) \
+		--build-arg VERSION=$(VERSION) \
+		-t $(REGISTRY):$(VERSION)-$(subst /,-,$(PLATFORM)) \
+		.
 
 
 push: image
