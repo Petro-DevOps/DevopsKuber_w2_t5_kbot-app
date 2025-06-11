@@ -47,8 +47,8 @@ export VERSION
 .PHONY: image
 
 
-#format:
-#	@command -v gofmt >/dev/null && gofmt -s -w ./ || echo "Skipping gofmt: not installed"
+format:
+	gofmt -s -w ./
 
 lint:
 	golint
@@ -56,13 +56,13 @@ lint:
 test:
 	go test -v
 
-#get:
-#	go get
+get:
+	go get
 
 # can be used for manual build 
 build: 
 	@echo "Building for: GOOS=$(GOOS), GOARCH=$(GOARCH)"
-	gofmt -s -w ./ && go get && CGO_ENABLED=0 GOOS=$(GOOS) GOARCH=$(GOARCH) go build -v -x -o $(BUILD_DIR)/kbot-app-$(GOOS)-$(GOARCH) -ldflags "-X="github.com/Petro-DevOps/kbot-app/cmd.appVersion=${VERSION}
+	CGO_ENABLED=0 GOOS=$(GOOS) GOARCH=$(GOARCH) go build -v -x -o $(BUILD_DIR)/kbot-app-$(GOOS)-$(GOARCH) -ldflags "-X="github.com/Petro-DevOps/kbot-app/cmd.appVersion=${VERSION}
 
 #build-platform: format get 
 #	@echo "Building for: GOOS=$(GOOS), GOARCH=$(GOARCH)"
@@ -73,37 +73,21 @@ build:
 
 #platform-specific targets
 linux: 
-	$(MAKE) build-platform GOOS=linux GOARCH=amd64
-	@echo 'GOOS=linux' > .platform_env
-	@echo 'GOARCH=amd64' >> .platform_env
-	@echo "Exported variables values into platform_env file target are: GOOS=$(GOOS), GOARCH=$(GOARCH)"
+	$(MAKE) build GOOS=linux GOARCH=amd64
 
 linux_arm64: 
-	$(MAKE) build-platform GOOS=linux GOARCH=arm64
-	@echo 'GOOS=linux' > .platform_env
-	@echo 'GOARCH=arm64' >> .platform_env
-	@echo "Exported variables values into platform_env file target are: GOOS=$(GOOS), GOARCH=$(GOARCH)"
+	$(MAKE) build GOOS=linux GOARCH=arm64
 
 darwin: 
-	$(MAKE) build-platform GOOS=darwin GOARCH=amd64
-	@echo "Exported variables values in "darwin" target are: GOOS=$(GOOS), GOARCH=$(GOARCH)"
-	@echo 'GOOS=darwin' > .platform_env
-	@echo 'GOARCH=amd64' >> .platform_env
-	@echo "Exported variables values into platform_env file target are: GOOS=$(GOOS), GOARCH=$(GOARCH)"
+	$(MAKE) build GOOS=darwin GOARCH=amd64
 
 darwin_arm64:
-	$(MAKE) build-platform GOOS=darwin GOARCH=arm64
-	@echo 'GOOS=darwin' > .platform_env
-	@echo 'GOARCH=arm64' >> .platform_env
-	@echo "Exported variables values into platform_env file target are: GOOS=$(GOOS), GOARCH=$(GOARCH)"
+	$(MAKE) build GOOS=darwin GOARCH=arm64
 
 windows:
-	$(MAKE) build-platform GOOS=windows GOARCH=amd64
-	@echo 'GOOS=windows' > .platform_env
-	@echo 'GOARCH=amd64' >> .platform_env
-	@echo "Exported variables values into platform_env file target are: GOOS=$(GOOS), GOARCH=$(GOARCH)"
+	$(MAKE) build GOOS=windows GOARCH=amd64
 
-# Збірка для всіх основних платформ
+# build all binaries 
 build-all:
 	$(MAKE) linux
 	$(MAKE) linux_arm64
@@ -111,9 +95,7 @@ build-all:
 	$(MAKE) darwin_arm64
 	$(MAKE) windows
 
-# Автоматичний вибір цільового образу для Dockerfile
-#docker_target = $(if $(findstring linux,$(GOOS)),final-linux,final)
-
+## Updating OS\arch for Darwin Docker Image
 ifneq (,$(filter $(GOOS),linux linux_arm64))
 DOCKER_TARGET=final-linux
 endif
